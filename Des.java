@@ -143,6 +143,82 @@ public class Des {
         return new String(new BigInteger(s.toString(), 2).toByteArray());
     }
 
+    public int[] generePermutation(int taille) {
+        int[] permutation = new int[taille];
+
+        for (int i = 0; i < taille; i++) {
+            permutation[i] = i;
+        }
+
+        for (int i = 0; i < taille; i++) {
+            int j = rand.nextInt(taille);
+            int tmp = permutation[i];
+            permutation[i] = permutation[j];
+            permutation[j] = tmp;
+        }
+
+        return permutation;
+    }
+
+    public void permutation(int[] tab_permutation, int[] bloc) {
+        int[] bloc_permute = new int[tab_permutation.length];
+
+        for (int i = 0; i < tab_permutation.length; i++) {
+            bloc_permute[i] = bloc[tab_permutation[i]];
+        }
+
+        System.arraycopy(bloc_permute, 0, bloc, 0, tab_permutation.length);
+    }
+
+    public void invPermutation(int[] tab_permutation, int[] bloc) {
+        int[] bloc_permute = new int[tab_permutation.length];
+
+        for (int i = 0; i < tab_permutation.length; i++) {
+            bloc_permute[tab_permutation[i]] = bloc[i];
+        }
+
+        System.arraycopy(bloc_permute, 0, bloc, 0, tab_permutation.length);
+    }
+
+    public int[][] decoupage(int[] bloc, int nbBlocs) {
+        int[][] blocs = new int[nbBlocs][bloc.length / nbBlocs];
+
+        for (int i = 0; i < nbBlocs; i++) {
+            System.arraycopy(bloc, i * bloc.length / nbBlocs, blocs[i], 0, bloc.length / nbBlocs);
+        }
+
+        return blocs;
+    }
+
+    public int[] recollage_bloc(int[][] blocs) {
+        int[] bloc = new int[blocs.length * blocs[0].length];
+
+        for (int i = 0; i < blocs.length; i++) {
+            System.arraycopy(blocs[i], 0, bloc, i * blocs[i].length, blocs[i].length);
+        }
+
+        return bloc;
+    }
+
+    public int[] decale_gauche(int[] bloc, int nbCran) {
+        int[] bloc_decale = new int[bloc.length];
+
+        System.arraycopy(bloc, nbCran, bloc_decale, 0, bloc.length - nbCran);
+        System.arraycopy(bloc, 0, bloc_decale, bloc.length - nbCran, nbCran);
+
+        return bloc_decale;
+    }
+
+    public int[] xor(int[] tab1, int[] tab2) {
+        int[] tab_xor = new int[tab1.length];
+
+        for (int i = 0; i < tab1.length; i++) {
+            tab_xor[i] = tab1[i] ^ tab2[i];
+        }
+
+        return tab_xor;
+    }
+
     public String toString() {
         StringBuilder s = new StringBuilder();
 
