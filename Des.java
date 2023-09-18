@@ -218,6 +218,25 @@ public class Des {
         return tab_xor;
     }
 
+    public int[] fonction_S(int[] tab) {
+        String row = tab[0] + "" + tab[5];
+        String col = tab[1] + "" + tab[2] + tab[3] + tab[4];
+
+        int tab_s = S[0][Integer.parseInt(row, 2)][Integer.parseInt(col, 2)];
+
+        String tab_s_bin = Integer.toBinaryString(tab_s);
+
+        System.out.println("tab_s_bin : " + tab_s_bin);
+
+        int[] tab_s_bin_int = new int[tab_s_bin.length()];
+
+        for (int i = 0; i < tab_s_bin.length(); i++) {
+            tab_s_bin_int[i] = Integer.parseInt(String.valueOf(tab_s_bin.charAt(i)));
+        }
+
+        return tab_s_bin_int;
+    }
+
     public String toString() {
         StringBuilder s = new StringBuilder();
 
