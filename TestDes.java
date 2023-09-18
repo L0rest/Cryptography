@@ -13,5 +13,7 @@ public class TestDes {
         System.out.println("decoupage : " + Arrays.deepToString(des.decoupage(test, 4)));
         System.out.println("recollage : " + Arrays.toString(des.recollage_bloc(des.decoupage(test, 4))));
         System.out.println("decale : " + Arrays.toString(des.decale_gauche(test, 4)));
+
+        System.out.println("fonction S : " + Arrays.toString(des.fonction_S(new int[]{1, 0, 0, 0, 0, 1})));
     }
 }
