@@ -1,4 +1,5 @@
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Des {
@@ -159,24 +160,24 @@ public class Des {
         return permutation;
     }
 
-    public void permutation(int[] tab_permutation, int[] bloc) {
+    public int[] permutation(int[] tab_permutation, int[] bloc) {
         int[] bloc_permute = new int[tab_permutation.length];
 
         for (int i = 0; i < tab_permutation.length; i++) {
             bloc_permute[i] = bloc[tab_permutation[i]];
         }
 
-        System.arraycopy(bloc_permute, 0, bloc, 0, tab_permutation.length);
+        return bloc_permute;
     }
 
-    public void invPermutation(int[] tab_permutation, int[] bloc) {
+    public int[] invPermutation(int[] tab_permutation, int[] bloc) {
         int[] bloc_permute = new int[tab_permutation.length];
 
         for (int i = 0; i < tab_permutation.length; i++) {
             bloc_permute[tab_permutation[i]] = bloc[i];
         }
 
-        System.arraycopy(bloc_permute, 0, bloc, 0, tab_permutation.length);
+        return bloc_permute;
     }
 
     public int[][] decoupage(int[] bloc, int nbBlocs) {
@@ -218,6 +219,20 @@ public class Des {
         return tab_xor;
     }
 
+    public void genereCle(int n) {
+        int[] Kn = permutation(PC1, masterKey);
+
+        int[][] Kn_blocs = decoupage(Kn, 2);
+
+        Kn_blocs[0] = decale_gauche(Kn_blocs[0], TAB_DECALAGE[n]);
+        Kn_blocs[1] = decale_gauche(Kn_blocs[1], TAB_DECALAGE[n]);
+
+        Kn = recollage_bloc(Kn_blocs);
+
+        tab_cles[n] = permutation(PC2, Kn);
+
+    }
+
     public int[] fonction_S(int[] tab) {
         String row = tab[0] + "" + tab[5];
         String col = tab[1] + "" + tab[2] + tab[3] + tab[4];
@@ -225,8 +240,6 @@ public class Des {
         int tab_s = S[0][Integer.parseInt(row, 2)][Integer.parseInt(col, 2)];
 
         String tab_s_bin = Integer.toBinaryString(tab_s);
-
-        System.out.println("tab_s_bin : " + tab_s_bin);
 
         int[] tab_s_bin_int = new int[tab_s_bin.length()];
 
@@ -236,6 +249,11 @@ public class Des {
 
         return tab_s_bin_int;
     }
+
+    int[] fonction_F(int[] uneCle, int[] unD) {
+        return null;
+    }
+
 
     public String toString() {
         StringBuilder s = new StringBuilder();
