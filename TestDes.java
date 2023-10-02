@@ -15,5 +15,13 @@ public class TestDes {
         System.out.println("decale : " + Arrays.toString(des.decale_gauche(test, 4)));
 
         System.out.println("fonction S : " + Arrays.toString(des.fonction_S(new int[]{1, 0, 0, 0, 0, 1})));
+
+        for (int i = 0; i < 16; i++) {
+            des.genereCle(i);
+        }
+
+        for (int[] cle : des.tab_cles) {
+            System.out.println(Arrays.toString(cle));
+        }
     }
 }
