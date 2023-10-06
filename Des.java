@@ -106,6 +106,12 @@ public class Des {
             27, 28, 29, 30, 31, 0
     };
 
+    final int[] P = {
+            15, 6, 19, 20, 28, 11, 27, 16,
+            0, 14, 22, 25, 4, 17, 30, 9,
+            1, 7, 23, 13, 31, 26, 2, 8,
+            18, 12, 29, 5, 21, 10, 3, 24
+    };
 
     public int[] masterKey;
     public int[][] tab_cles;
@@ -128,6 +134,14 @@ public class Des {
 
         for (int i = 0; i < bits.length(); i++) {
             block[i] = Integer.parseInt(String.valueOf(bits.charAt(i)));
+        }
+
+        if (block.length % 64 != 0) {
+            int[] block_tmp = new int[block.length + (64 - (block.length % 64))];
+
+            System.arraycopy(block, 0, block_tmp, 0, block.length);
+
+            block = block_tmp;
         }
 
         return block;
@@ -160,6 +174,16 @@ public class Des {
         return permutation;
     }
 
+    public int[] genereMasterKey() {
+        int[] masterKey = new int[64];
+
+        for (int i = 0; i < 64; i++) {
+            masterKey[i] = rand.nextInt(2);
+        }
+
+        return masterKey;
+    }
+
     public int[] permutation(int[] tab_permutation, int[] bloc) {
         int[] bloc_permute = new int[tab_permutation.length];
 
@@ -180,17 +204,23 @@ public class Des {
         return bloc_permute;
     }
 
-    public int[][] decoupage(int[] bloc, int nbBlocs) {
-        int[][] blocs = new int[nbBlocs][bloc.length / nbBlocs];
+    public int[][] decoupage(int[] bloc, int tailleBlocs) {
+        if (bloc.length % tailleBlocs != 0)
+            throw new IllegalArgumentException("Le tableau de blocs doit être divisible par la taille des blocs");
+
+        int nbBlocs = bloc.length / tailleBlocs;
+        int[][] blocs = new int[nbBlocs][tailleBlocs];
 
         for (int i = 0; i < nbBlocs; i++) {
-            System.arraycopy(bloc, i * bloc.length / nbBlocs, blocs[i], 0, bloc.length / nbBlocs);
+            System.arraycopy(bloc, i * tailleBlocs, blocs[i], 0, tailleBlocs);
         }
 
         return blocs;
     }
 
     public int[] recollage_bloc(int[][] blocs) {
+        if (blocs.length == 0) throw new IllegalArgumentException("Le tableau de blocs ne doit pas être vide");
+
         int[] bloc = new int[blocs.length * blocs[0].length];
 
         for (int i = 0; i < blocs.length; i++) {
@@ -210,6 +240,9 @@ public class Des {
     }
 
     public int[] xor(int[] tab1, int[] tab2) {
+        if (tab1.length != tab2.length)
+            throw new IllegalArgumentException("Les deux tableaux doivent avoir la même taille");
+
         int[] tab_xor = new int[tab1.length];
 
         for (int i = 0; i < tab1.length; i++) {
@@ -222,7 +255,7 @@ public class Des {
     public void genereCle(int n) {
         int[] Kn = permutation(PC1, masterKey);
 
-        int[][] Kn_blocs = decoupage(Kn, 2);
+        int[][] Kn_blocs = decoupage(Kn, Kn.length / 2);
 
         Kn_blocs[0] = decale_gauche(Kn_blocs[0], TAB_DECALAGE[n]);
         Kn_blocs[1] = decale_gauche(Kn_blocs[1], TAB_DECALAGE[n]);
@@ -233,11 +266,11 @@ public class Des {
 
     }
 
-    public int[] fonction_S(int[] tab) {
+    public int[] fonction_S(int[] tab, int noRonde) {
         String row = tab[0] + "" + tab[5];
         String col = tab[1] + "" + tab[2] + tab[3] + tab[4];
 
-        int tab_s = S[0][Integer.parseInt(row, 2)][Integer.parseInt(col, 2)];
+        int tab_s = S[noRonde][Integer.parseInt(row, 2)][Integer.parseInt(col, 2)];
 
         String tab_s_bin = Integer.toBinaryString(tab_s);
 
@@ -247,11 +280,89 @@ public class Des {
             tab_s_bin_int[i] = Integer.parseInt(String.valueOf(tab_s_bin.charAt(i)));
         }
 
+        if (tab_s_bin_int.length < 4) {
+            int[] tab_s_bin_int_tmp = new int[4];
+
+            System.arraycopy(tab_s_bin_int, 0, tab_s_bin_int_tmp, 4 - tab_s_bin_int.length, tab_s_bin_int.length);
+
+            tab_s_bin_int = tab_s_bin_int_tmp;
+        }
+
         return tab_s_bin_int;
     }
 
     int[] fonction_F(int[] uneCle, int[] unD) {
-        return null;
+        int[] E_D = permutation(E, unD);
+
+        int[] E_D_xor_K = xor(E_D, uneCle);
+
+        int[][] E_D_xor_K_blocs = decoupage(E_D_xor_K, 6);
+
+        int[][] E_D_xor_K_blocs_S = new int[E_D_xor_K_blocs.length][];
+
+        for (int i = 0; i < E_D_xor_K_blocs.length; i++) {
+            E_D_xor_K_blocs_S[i] = fonction_S(E_D_xor_K_blocs[i], i);
+        }
+
+        int[] E_D_xor_K_blocs_S_recollage = recollage_bloc(E_D_xor_K_blocs_S);
+
+        return permutation(P, E_D_xor_K_blocs_S_recollage);
+    }
+
+    public int[] crypte(String message_clair) {
+        // Convert message to bits
+        int[] message_code = stringToBits(message_clair);
+
+        // Split message into blocks of 64 bits
+        int[][] message_code_blocs = decoupage(message_code, TAILLE_BLOC);
+
+        // For each block, make an initial permutation and split it into two halves
+        for (int i = 0; i < message_code_blocs.length; i++) {
+            int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
+
+            int[][] sous_blocs = decoupage(bloc, bloc.length / 2);
+
+            for (int j = 0; j < 16; j++) {
+                genereCle(j);
+
+                int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1]));
+                sous_blocs[0] = sous_blocs[1];
+                sous_blocs[1] = tmp;
+            }
+
+            bloc = recollage_bloc(sous_blocs);
+
+            message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
+
+        }
+
+        return recollage_bloc(message_code_blocs);
+
+    }
+
+    public String decrypte(int[] message_code) {
+        // Split message into blocks of 64 bits
+        int[][] message_code_blocs = decoupage(message_code, TAILLE_BLOC);
+
+        // For each block, make an initial permutation and split it into two halves
+        for (int i = 0; i < message_code_blocs.length; i++) {
+            int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
+
+            int[][] sous_blocs = decoupage(bloc, bloc.length / 2);
+
+            for (int j = 15; j >= 0; j--) {
+                int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1]));
+                sous_blocs[0] = sous_blocs[1];
+                sous_blocs[1] = tmp;
+            }
+
+            bloc = recollage_bloc(sous_blocs);
+
+            message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
+
+        }
+
+        return bitsToString(recollage_bloc(message_code_blocs));
     }
 
 
