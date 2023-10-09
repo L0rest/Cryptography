@@ -117,17 +117,29 @@ public class Des {
     public int[][] tab_cles;
     public Random rand = new Random();
 
+    /**
+     * Constructor for Des class
+     */
     public Des() {
         this.masterKey = new int[64];
 
+        // Génération de la master key
         for (int i = 0; i < 64; i++) {
             this.masterKey[i] = rand.nextInt(2);
         }
 
+
         this.tab_cles = new int[16][];
     }
 
+    /**
+     * Convert a string to an array of bits
+     * @param message Message to convert to bits
+     * @return int[] Array of bits obtained from the message
+     * @throws IllegalArgumentException if the message is empty
+     */
     public int[] stringToBits(String message) {
+        if (message.isEmpty()) throw new IllegalArgumentException("The message must not be empty");
         String bits = new BigInteger(message.getBytes()).toString(2);
 
         int[] block = new int[bits.length()];
@@ -136,10 +148,13 @@ public class Des {
             block[i] = Integer.parseInt(String.valueOf(bits.charAt(i)));
         }
 
-        if (block.length % 64 != 0) {
-            int[] block_tmp = new int[block.length + (64 - (block.length % 64))];
+        // if block length is not a multiple of 64, add 0s to the left and return the couple (block, nb_0s added)
 
-            System.arraycopy(block, 0, block_tmp, 0, block.length);
+        if (block.length % 64 != 0) {
+            int no_0s = 64 - block.length % 64;
+            int[] block_tmp = new int[block.length + (64 - block.length % 64)];
+
+            System.arraycopy(block, 0, block_tmp, 64 - block.length % 64, block.length);
 
             block = block_tmp;
         }
@@ -147,6 +162,11 @@ public class Des {
         return block;
     }
 
+    /**
+     * Convert an array of bits to a string
+     * @param block Block to convert to string
+     * @return String obtained from the block
+     */
     public String bitsToString(int[] block) {
         StringBuilder s = new StringBuilder();
 
@@ -174,16 +194,12 @@ public class Des {
         return permutation;
     }
 
-    public int[] genereMasterKey() {
-        int[] masterKey = new int[64];
-
-        for (int i = 0; i < 64; i++) {
-            masterKey[i] = rand.nextInt(2);
-        }
-
-        return masterKey;
-    }
-
+    /**
+     * Permute a bloc using a permutation table
+     * @param tab_permutation Permutation table to use
+     * @param bloc            Bloc to permute
+     * @return int[] Permuted bloc
+     */
     public int[] permutation(int[] tab_permutation, int[] bloc) {
         int[] bloc_permute = new int[tab_permutation.length];
 
@@ -194,6 +210,12 @@ public class Des {
         return bloc_permute;
     }
 
+    /**
+     * Permute the bloc using the inverse of the permutation table
+     * @param tab_permutation Permutation table to use
+     * @param bloc            Bloc to permute
+     * @return int[] Permuted bloc
+     */
     public int[] invPermutation(int[] tab_permutation, int[] bloc) {
         int[] bloc_permute = new int[tab_permutation.length];
 
@@ -204,9 +226,16 @@ public class Des {
         return bloc_permute;
     }
 
+    /**
+     * Split a bloc into smaller blocs of tailleBlocs length
+     * @param bloc        Bloc to split
+     * @param tailleBlocs Size of the blocs obtained after the split
+     * @return int[][] Array of blocs obtained after the split
+     * @throws IllegalArgumentException if the bloc length is not a multiple of tailleBlocs
+     */
     public int[][] decoupage(int[] bloc, int tailleBlocs) {
-        if (bloc.length % tailleBlocs != 0)
-            throw new IllegalArgumentException("Le tableau de blocs doit être divisible par la taille des blocs");
+        if (bloc.length % tailleBlocs != 0) throw new IllegalArgumentException("Le tableau de blocs doit être divisible par la taille des blocs");
+
 
         int nbBlocs = bloc.length / tailleBlocs;
         int[][] blocs = new int[nbBlocs][tailleBlocs];
@@ -218,6 +247,11 @@ public class Des {
         return blocs;
     }
 
+    /**
+     * Merge blocs into a single bloc
+     * @param blocs Blocs to merge
+     * @return int[] Merged bloc
+     */
     public int[] recollage_bloc(int[][] blocs) {
         if (blocs.length == 0) throw new IllegalArgumentException("Le tableau de blocs ne doit pas être vide");
 
@@ -230,6 +264,12 @@ public class Des {
         return bloc;
     }
 
+    /**
+     * Shift a bloc to the left by nbCran
+     * @param bloc    Bloc to shift
+     * @param nbCran  Number of shifts
+     * @return int[] Shifted bloc
+     */
     public int[] decale_gauche(int[] bloc, int nbCran) {
         int[] bloc_decale = new int[bloc.length];
 
@@ -239,6 +279,12 @@ public class Des {
         return bloc_decale;
     }
 
+    /**
+     * XOR two arrays of the same length
+     * @param tab1 First array to xor
+     * @param tab2 Second array to xor
+     * @return int[] Result of the xor between tab1 and tab2
+     */
     public int[] xor(int[] tab1, int[] tab2) {
         if (tab1.length != tab2.length)
             throw new IllegalArgumentException("Les deux tableaux doivent avoir la même taille");
@@ -252,63 +298,89 @@ public class Des {
         return tab_xor;
     }
 
+    /**
+     * Generate the key for the round n and store it in tab_cles[n]
+     * @param n Round number
+     */
     public void genereCle(int n) {
-        int[] Kn = permutation(PC1, masterKey);
+        // Check if key is already generated for this round
 
-        int[][] Kn_blocs = decoupage(Kn, Kn.length / 2);
+        if (tab_cles[n] == null) {
+            int[] Kn = permutation(PC1, masterKey);
 
-        Kn_blocs[0] = decale_gauche(Kn_blocs[0], TAB_DECALAGE[n]);
-        Kn_blocs[1] = decale_gauche(Kn_blocs[1], TAB_DECALAGE[n]);
+            int[][] Kn_blocs = decoupage(Kn, Kn.length / 2);
 
-        Kn = recollage_bloc(Kn_blocs);
+            Kn_blocs[0] = decale_gauche(Kn_blocs[0], TAB_DECALAGE[n]);
+            Kn_blocs[1] = decale_gauche(Kn_blocs[1], TAB_DECALAGE[n]);
 
-        tab_cles[n] = permutation(PC2, Kn);
+            Kn = recollage_bloc(Kn_blocs);
+
+            tab_cles[n] = permutation(PC2, Kn);
+
+        }
 
     }
 
+    /**
+     * Obtain the value in the S[noRonde] table corresponding to the binary value in tab
+     * @param tab    Binary value to get the corresponding value in the S table
+     * @return int[] Value in the S table converted to binary
+     */
     public int[] fonction_S(int[] tab, int noRonde) {
         String row = tab[0] + "" + tab[5];
         String col = tab[1] + "" + tab[2] + tab[3] + tab[4];
 
+        // Get the required value in the noRonde-th S table
         int tab_s = S[noRonde][Integer.parseInt(row, 2)][Integer.parseInt(col, 2)];
 
-        String tab_s_bin = Integer.toBinaryString(tab_s);
+        // Convert the value to binary
+        String tab_s_binary = Integer.toBinaryString(tab_s);
 
-        int[] tab_s_bin_int = new int[tab_s_bin.length()];
+        // Convert the binary value to an array of int
+        int[] res = new int[tab_s_binary.length()];
 
-        for (int i = 0; i < tab_s_bin.length(); i++) {
-            tab_s_bin_int[i] = Integer.parseInt(String.valueOf(tab_s_bin.charAt(i)));
+        for (int i = 0; i < tab_s_binary.length(); i++) {
+            res[i] = Integer.parseInt(String.valueOf(tab_s_binary.charAt(i)));
         }
 
-        if (tab_s_bin_int.length < 4) {
-            int[] tab_s_bin_int_tmp = new int[4];
+        // Add 0s to the left if the array is not 4 bits long
+        if (res.length < 4) {
+            int[] res_tmp = new int[4];
 
-            System.arraycopy(tab_s_bin_int, 0, tab_s_bin_int_tmp, 4 - tab_s_bin_int.length, tab_s_bin_int.length);
+            System.arraycopy(res, 0, res_tmp, 4 - res.length, res.length);
 
-            tab_s_bin_int = tab_s_bin_int_tmp;
+            res = res_tmp;
         }
 
-        return tab_s_bin_int;
+        return res;
     }
 
-    int[] fonction_F(int[] uneCle, int[] unD) {
-        int[] E_D = permutation(E, unD);
+    /**
+     * @param uneCle   Key to use
+     * @param unD      D to use
+     * @param noRonde  Round number
+     * @return int[]
+     */
+    int[] fonction_F(int[] uneCle, int[] unD, int noRonde) {
+        int[] unDprime = permutation(E, unD);
 
-        int[] E_D_xor_K = xor(E_D, uneCle);
+        int[] res_xor = xor(unDprime, uneCle);
 
-        int[][] E_D_xor_K_blocs = decoupage(E_D_xor_K, 6);
+        int[][] xor_decoupe = decoupage(res_xor, 6);
 
-        int[][] E_D_xor_K_blocs_S = new int[E_D_xor_K_blocs.length][];
+        int[][] res = new int[xor_decoupe.length][];
 
-        for (int i = 0; i < E_D_xor_K_blocs.length; i++) {
-            E_D_xor_K_blocs_S[i] = fonction_S(E_D_xor_K_blocs[i], i);
+        for (int i = 0; i < xor_decoupe.length; i++) {
+            res[i] = fonction_S(xor_decoupe[i], noRonde);
         }
 
-        int[] E_D_xor_K_blocs_S_recollage = recollage_bloc(E_D_xor_K_blocs_S);
-
-        return permutation(P, E_D_xor_K_blocs_S_recollage);
+        return permutation(P, recollage_bloc(res));
     }
 
+    /**
+     * @param message_clair Message to encrypt
+     * @return int[]
+     */
     public int[] crypte(String message_clair) {
         // Convert message to bits
         int[] message_code = stringToBits(message_clair);
@@ -322,10 +394,10 @@ public class Des {
 
             int[][] sous_blocs = decoupage(bloc, bloc.length / 2);
 
-            for (int j = 0; j < 16; j++) {
+            for (int j = 0; j < NB_RONDE; j++) {
                 genereCle(j);
 
-                int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1]));
+                int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1], j));
                 sous_blocs[0] = sous_blocs[1];
                 sous_blocs[1] = tmp;
             }
@@ -340,6 +412,10 @@ public class Des {
 
     }
 
+    /**
+     * @param message_code Message to decrypt
+     * @return String
+     */
     public String decrypte(int[] message_code) {
         // Split message into blocks of 64 bits
         int[][] message_code_blocs = decoupage(message_code, TAILLE_BLOC);
@@ -350,8 +426,10 @@ public class Des {
 
             int[][] sous_blocs = decoupage(bloc, bloc.length / 2);
 
-            for (int j = 15; j >= 0; j--) {
-                int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1]));
+            for (int j = NB_RONDE - 1; j == 0; j--) {
+                genereCle(j);
+
+                int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1], j));
                 sous_blocs[0] = sous_blocs[1];
                 sous_blocs[1] = tmp;
             }
