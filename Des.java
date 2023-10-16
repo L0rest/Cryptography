@@ -117,6 +117,7 @@ public class Des {
     public int[][] tab_cles;
     public Random rand = new Random();
 
+
     /**
      * Constructor for Des class :
      * Generate the master key and the keys for each round
@@ -137,6 +138,7 @@ public class Des {
             genereCle(i);
         }
     }
+
 
     /**
      * Convert a string to an array of bits
@@ -169,6 +171,7 @@ public class Des {
         return block;
     }
 
+
     /**
      * Convert an array of bits to a string
      *
@@ -185,22 +188,6 @@ public class Des {
         return new String(new BigInteger(s.toString(), 2).toByteArray());
     }
 
-    public int[] generePermutation(int taille) {
-        int[] permutation = new int[taille];
-
-        for (int i = 0; i < taille; i++) {
-            permutation[i] = i;
-        }
-
-        for (int i = 0; i < taille; i++) {
-            int j = rand.nextInt(taille);
-            int tmp = permutation[i];
-            permutation[i] = permutation[j];
-            permutation[j] = tmp;
-        }
-
-        return permutation;
-    }
 
     /**
      * Permute a bloc using a permutation table
@@ -219,6 +206,7 @@ public class Des {
         return bloc_permute;
     }
 
+
     /**
      * Permute the bloc using the inverse of the permutation table
      *
@@ -235,6 +223,7 @@ public class Des {
 
         return bloc_permute;
     }
+
 
     /**
      * Split a bloc into smaller blocs of tailleBlocs length
@@ -258,6 +247,7 @@ public class Des {
         return blocs;
     }
 
+
     /**
      * Merge blocs into a single bloc
      *
@@ -276,6 +266,7 @@ public class Des {
         return bloc;
     }
 
+
     /**
      * Shift a bloc to the left by nbCran
      *
@@ -291,6 +282,7 @@ public class Des {
 
         return bloc_decale;
     }
+
 
     /**
      * XOR two arrays of the same length
@@ -311,6 +303,7 @@ public class Des {
 
         return tab_xor;
     }
+
 
     /**
      * Generate the key for the round n and store it in tab_cles[n]
@@ -335,6 +328,7 @@ public class Des {
         }
 
     }
+
 
     /**
      * Obtain the value in the S[noRonde] table corresponding to the binary value in tab
@@ -372,6 +366,7 @@ public class Des {
         return res;
     }
 
+
     /**
      * @param uneCle  Key to use
      * @param unD     D to use
@@ -393,6 +388,7 @@ public class Des {
 
         return permutation(P, recollage_bloc(res));
     }
+
 
     /**
      * @param message_clair Message to encrypt
@@ -433,6 +429,7 @@ public class Des {
 
     }
 
+
     /**
      * @param message_code Message to decrypt
      * @return String
@@ -468,16 +465,6 @@ public class Des {
         return bitsToString(recollage_bloc(message_code_blocs));
     }
 
-
-    public String toString() {
-        StringBuilder s = new StringBuilder();
-
-        for (int j : masterKey) {
-            s.append(j);
-        }
-
-        return s.toString();
-    }
 
     public static void main(String[] args) {
         Des des = new Des();
