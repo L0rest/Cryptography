@@ -123,13 +123,18 @@ public class Des {
     public Des() {
         this.masterKey = new int[64];
 
-        // Génération de la master key
+        // Generate the master key
         for (int i = 0; i < 64; i++) {
             this.masterKey[i] = rand.nextInt(2);
         }
 
-
+        // Initialize the array of keys
         this.tab_cles = new int[16][];
+
+        // Generate the keys for each round
+        for (int i = 0; i < 16; i++) {
+            genereCle(i);
+        }
     }
 
     /**
@@ -140,6 +145,7 @@ public class Des {
      */
     public int[] stringToBits(String message) {
         if (message.isEmpty()) throw new IllegalArgumentException("The message must not be empty");
+
         String bits = new BigInteger(message.getBytes()).toString(2);
 
         int[] block = new int[bits.length()];
@@ -151,7 +157,6 @@ public class Des {
         // if block length is not a multiple of 64, add 0s to the left and return the couple (block, nb_0s added)
 
         if (block.length % 64 != 0) {
-            int no_0s = 64 - block.length % 64;
             int[] block_tmp = new int[block.length + (64 - block.length % 64)];
 
             System.arraycopy(block, 0, block_tmp, 64 - block.length % 64, block.length);
@@ -235,7 +240,6 @@ public class Des {
      */
     public int[][] decoupage(int[] bloc, int tailleBlocs) {
         if (bloc.length % tailleBlocs != 0) throw new IllegalArgumentException("Le tableau de blocs doit être divisible par la taille des blocs");
-
 
         int nbBlocs = bloc.length / tailleBlocs;
         int[][] blocs = new int[nbBlocs][tailleBlocs];
@@ -327,6 +331,7 @@ public class Des {
      * @return int[] Value in the S table converted to binary
      */
     public int[] fonction_S(int[] tab, int noRonde) {
+        // Get the row and column of the S table
         String row = tab[0] + "" + tab[5];
         String col = tab[1] + "" + tab[2] + tab[3] + tab[4];
 
@@ -388,23 +393,26 @@ public class Des {
         // Split message into blocks of 64 bits
         int[][] message_code_blocs = decoupage(message_code, TAILLE_BLOC);
 
-        // For each block, make an initial permutation and split it into two halves
-        for (int i = 0; i < message_code_blocs.length; i++) {
-            int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
+        // Make 3 rounds for triple DES
+        for (int t = 0; t < 3; t++) {
 
-            int[][] sous_blocs = decoupage(bloc, bloc.length / 2);
+            // For each block, make an initial permutation and split it into two halves
+            for (int i = 0; i < message_code_blocs.length; i++) {
+                int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
 
-            for (int j = 0; j < NB_RONDE; j++) {
-                genereCle(j);
+                int[][] sous_blocs = decoupage(bloc, TAILLE_SOUS_BLOC);
 
-                int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1], j));
-                sous_blocs[0] = sous_blocs[1];
-                sous_blocs[1] = tmp;
+                for (int j = 0; j < NB_RONDE; j++) {
+                    int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1], j));
+                    sous_blocs[0] = sous_blocs[1];
+                    sous_blocs[1] = tmp;
+                }
+
+                bloc = recollage_bloc(sous_blocs);
+
+                message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
+
             }
-
-            bloc = recollage_bloc(sous_blocs);
-
-            message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
 
         }
 
@@ -420,24 +428,26 @@ public class Des {
         // Split message into blocks of 64 bits
         int[][] message_code_blocs = decoupage(message_code, TAILLE_BLOC);
 
-        // For each block, make an initial permutation and split it into two halves
-        for (int i = 0; i < message_code_blocs.length; i++) {
-            int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
+        // Make 3 rounds for triple DES
+        for (int t = 0; t < 3; t++) {
 
-            int[][] sous_blocs = decoupage(bloc, bloc.length / 2);
+            // For each block, make an initial permutation and split it into two halves
+            for (int i = 0; i < message_code_blocs.length; i++) {
+                int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
 
-            for (int j = NB_RONDE - 1; j == 0; j--) {
-                genereCle(j);
+                int[][] sous_blocs = decoupage(bloc, TAILLE_SOUS_BLOC);
 
-                int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1], j));
-                sous_blocs[0] = sous_blocs[1];
-                sous_blocs[1] = tmp;
+                for (int j = NB_RONDE - 1; j == 0; j--) {
+                    int[] tmp = sous_blocs[1];
+                    sous_blocs[1] = sous_blocs[0];
+                    sous_blocs[0] = xor(tmp, fonction_F(tab_cles[j], sous_blocs[1], j));
+                }
+
+                bloc = recollage_bloc(sous_blocs);
+
+                message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
+
             }
-
-            bloc = recollage_bloc(sous_blocs);
-
-            message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
-
         }
 
         return bitsToString(recollage_bloc(message_code_blocs));
@@ -452,6 +462,18 @@ public class Des {
         }
 
         return s.toString();
+    }
+
+    public static void main(String[] args) {
+        Des des = new Des();
+
+        String s1 = "Hello World chingchong bingchiling !";
+        System.out.println("Message clair : " + s1);
+        int[] msg_crypto = des.crypte(s1);
+
+        System.out.println("Message crypté : " + Arrays.toString(msg_crypto));
+
+        System.out.println("Message décrypté : " + des.decrypte(msg_crypto));
     }
 
 }
