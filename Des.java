@@ -6,7 +6,7 @@ public class Des {
 
     final int TAILLE_BLOC = 64;
     final int TAILLE_SOUS_BLOC = 32;
-    final int NB_RONDE = 1;
+    final int NB_RONDE = 16;
 
     final int[] TAB_DECALAGE = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
@@ -118,7 +118,8 @@ public class Des {
     public Random rand = new Random();
 
     /**
-     * Constructor for Des class
+     * Constructor for Des class :
+     * Generate the master key and the keys for each round
      */
     public Des() {
         this.masterKey = new int[64];
@@ -139,6 +140,7 @@ public class Des {
 
     /**
      * Convert a string to an array of bits
+     *
      * @param message Message to convert to bits
      * @return int[] Array of bits obtained from the message
      * @throws IllegalArgumentException if the message is empty
@@ -169,6 +171,7 @@ public class Des {
 
     /**
      * Convert an array of bits to a string
+     *
      * @param block Block to convert to string
      * @return String obtained from the block
      */
@@ -201,6 +204,7 @@ public class Des {
 
     /**
      * Permute a bloc using a permutation table
+     *
      * @param tab_permutation Permutation table to use
      * @param bloc            Bloc to permute
      * @return int[] Permuted bloc
@@ -217,6 +221,7 @@ public class Des {
 
     /**
      * Permute the bloc using the inverse of the permutation table
+     *
      * @param tab_permutation Permutation table to use
      * @param bloc            Bloc to permute
      * @return int[] Permuted bloc
@@ -233,13 +238,15 @@ public class Des {
 
     /**
      * Split a bloc into smaller blocs of tailleBlocs length
+     *
      * @param bloc        Bloc to split
      * @param tailleBlocs Size of the blocs obtained after the split
      * @return int[][] Array of blocs obtained after the split
      * @throws IllegalArgumentException if the bloc length is not a multiple of tailleBlocs
      */
     public int[][] decoupage(int[] bloc, int tailleBlocs) {
-        if (bloc.length % tailleBlocs != 0) throw new IllegalArgumentException("Le tableau de blocs doit être divisible par la taille des blocs");
+        if (bloc.length % tailleBlocs != 0)
+            throw new IllegalArgumentException("Le tableau de blocs doit être divisible par la taille des blocs");
 
         int nbBlocs = bloc.length / tailleBlocs;
         int[][] blocs = new int[nbBlocs][tailleBlocs];
@@ -253,6 +260,7 @@ public class Des {
 
     /**
      * Merge blocs into a single bloc
+     *
      * @param blocs Blocs to merge
      * @return int[] Merged bloc
      */
@@ -270,8 +278,9 @@ public class Des {
 
     /**
      * Shift a bloc to the left by nbCran
-     * @param bloc    Bloc to shift
-     * @param nbCran  Number of shifts
+     *
+     * @param bloc   Bloc to shift
+     * @param nbCran Number of shifts
      * @return int[] Shifted bloc
      */
     public int[] decale_gauche(int[] bloc, int nbCran) {
@@ -285,6 +294,7 @@ public class Des {
 
     /**
      * XOR two arrays of the same length
+     *
      * @param tab1 First array to xor
      * @param tab2 Second array to xor
      * @return int[] Result of the xor between tab1 and tab2
@@ -304,6 +314,7 @@ public class Des {
 
     /**
      * Generate the key for the round n and store it in tab_cles[n]
+     *
      * @param n Round number
      */
     public void genereCle(int n) {
@@ -327,7 +338,8 @@ public class Des {
 
     /**
      * Obtain the value in the S[noRonde] table corresponding to the binary value in tab
-     * @param tab    Binary value to get the corresponding value in the S table
+     *
+     * @param tab Binary value to get the corresponding value in the S table
      * @return int[] Value in the S table converted to binary
      */
     public int[] fonction_S(int[] tab, int noRonde) {
@@ -336,7 +348,7 @@ public class Des {
         String col = tab[1] + "" + tab[2] + tab[3] + tab[4];
 
         // Get the required value in the noRonde-th S table
-        int tab_s = S[noRonde][Integer.parseInt(row, 2)][Integer.parseInt(col, 2)];
+        int tab_s = S[noRonde % 8][Integer.parseInt(row, 2)][Integer.parseInt(col, 2)];
 
         // Convert the value to binary
         String tab_s_binary = Integer.toBinaryString(tab_s);
@@ -361,9 +373,9 @@ public class Des {
     }
 
     /**
-     * @param uneCle   Key to use
-     * @param unD      D to use
-     * @param noRonde  Round number
+     * @param uneCle  Key to use
+     * @param unD     D to use
+     * @param noRonde Round number
      * @return int[]
      */
     int[] fonction_F(int[] uneCle, int[] unD, int noRonde) {
@@ -393,7 +405,7 @@ public class Des {
         // Split message into blocks of 64 bits
         int[][] message_code_blocs = decoupage(message_code, TAILLE_BLOC);
 
-        // Make 3 rounds for triple DES
+        // Triple DES
         for (int t = 0; t < 3; t++) {
 
             // For each block, make an initial permutation and split it into two halves
@@ -401,17 +413,18 @@ public class Des {
                 int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
 
                 int[][] sous_blocs = decoupage(bloc, TAILLE_SOUS_BLOC);
+                int[] G = sous_blocs[0];
+                int[] D = sous_blocs[1];
 
                 for (int j = 0; j < NB_RONDE; j++) {
-                    int[] tmp = xor(sous_blocs[0], fonction_F(tab_cles[j], sous_blocs[1], j));
-                    sous_blocs[0] = sous_blocs[1];
-                    sous_blocs[1] = tmp;
+                    int[] tmp = xor(G, fonction_F(tab_cles[j], D, j));
+                    G = D;
+                    D = tmp;
                 }
 
-                bloc = recollage_bloc(sous_blocs);
+                bloc = recollage_bloc(new int[][]{G, D});
 
                 message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
-
             }
 
         }
@@ -428,7 +441,7 @@ public class Des {
         // Split message into blocks of 64 bits
         int[][] message_code_blocs = decoupage(message_code, TAILLE_BLOC);
 
-        // Make 3 rounds for triple DES
+        // Triple DES
         for (int t = 0; t < 3; t++) {
 
             // For each block, make an initial permutation and split it into two halves
@@ -436,18 +449,20 @@ public class Des {
                 int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
 
                 int[][] sous_blocs = decoupage(bloc, TAILLE_SOUS_BLOC);
+                int[] G = sous_blocs[0];
+                int[] D = sous_blocs[1];
 
-                for (int j = NB_RONDE - 1; j == 0; j--) {
-                    int[] tmp = sous_blocs[1];
-                    sous_blocs[1] = sous_blocs[0];
-                    sous_blocs[0] = xor(tmp, fonction_F(tab_cles[j], sous_blocs[1], j));
+                for (int j = NB_RONDE - 1; j >= 0; j--) {
+                    int[] tmp = D;
+                    D = G;
+                    G = xor(tmp, fonction_F(tab_cles[j], D, j));
                 }
 
-                bloc = recollage_bloc(sous_blocs);
+                bloc = recollage_bloc(new int[][]{G, D});
 
                 message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
-
             }
+
         }
 
         return bitsToString(recollage_bloc(message_code_blocs));
