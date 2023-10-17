@@ -179,6 +179,8 @@ public class Des {
      * @return String obtained from the block
      */
     public String bitsToString(int[] block) {
+        if (block.length == 0) throw new IllegalArgumentException("The block must not be empty");
+
         StringBuilder s = new StringBuilder();
 
         for (int j : block) {
