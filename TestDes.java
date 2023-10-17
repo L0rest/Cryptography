@@ -5,18 +5,24 @@ import java.util.Random;
 
 public class TestDes {
 
-    @Test
+    @Test (expected = IllegalArgumentException.class)
     public void TestConversion() {
         Des des = new Des();
 
         String s1 = "Hello World";
         Assert.assertEquals(s1, des.bitsToString(des.stringToBits(s1)));
 
-        String s2 = "E452gfgrF41,G";
+        String s2 = "E45!2gf?grF41,G";
         Assert.assertEquals(s2, des.bitsToString(des.stringToBits(s2)));
 
         String s3 = "a@é_çèà";
         Assert.assertEquals(s3, des.bitsToString(des.stringToBits(s3)));
+
+        String s4 = "";
+        des.stringToBits(s4);
+
+        int[] tab = new int[0];
+        des.bitsToString(tab);
     }
 
     @Test
