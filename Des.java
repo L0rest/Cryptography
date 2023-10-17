@@ -6,7 +6,7 @@ public class Des {
 
     final int TAILLE_BLOC = 64;
     final int TAILLE_SOUS_BLOC = 32;
-    final int NB_RONDE = 16;
+    final int NB_RONDE = 1;
 
     final int[] TAB_DECALAGE = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
@@ -253,6 +253,7 @@ public class Des {
      *
      * @param blocs Blocs to merge
      * @return int[] Merged bloc
+     * @throws IllegalArgumentException if the blocs array is empty
      */
     public int[] recollage_bloc(int[][] blocs) {
         if (blocs.length == 0) throw new IllegalArgumentException("Le tableau de blocs ne doit pas être vide");
@@ -290,6 +291,7 @@ public class Des {
      * @param tab1 First array to xor
      * @param tab2 Second array to xor
      * @return int[] Result of the xor between tab1 and tab2
+     * @throws IllegalArgumentException if the two arrays don't have the same length
      */
     public int[] xor(int[] tab1, int[] tab2) {
         if (tab1.length != tab2.length)
@@ -312,7 +314,6 @@ public class Des {
      */
     public void genereCle(int n) {
         // Check if key is already generated for this round
-
         if (tab_cles[n] == null) {
             int[] Kn = permutation(PC1, masterKey);
 
@@ -334,6 +335,7 @@ public class Des {
      * Obtain the value in the S[noRonde] table corresponding to the binary value in tab
      *
      * @param tab Binary value to get the corresponding value in the S table
+     * @param noRonde Round number
      * @return int[] Value in the S table converted to binary
      */
     public int[] fonction_S(int[] tab, int noRonde) {
@@ -368,10 +370,12 @@ public class Des {
 
 
     /**
+     * Make the F function on a bloc D using a key and a round number
+     *
      * @param uneCle  Key to use
      * @param unD     D to use
      * @param noRonde Round number
-     * @return int[]
+     * @return int[] Result of the F function
      */
     int[] fonction_F(int[] uneCle, int[] unD, int noRonde) {
         int[] unDprime = permutation(E, unD);
@@ -391,8 +395,10 @@ public class Des {
 
 
     /**
+     * Crypt a message following the DES algorithm
+     *
      * @param message_clair Message to encrypt
-     * @return int[]
+     * @return int[] The encrypted message
      */
     public int[] crypte(String message_clair) {
         // Convert message to bits
@@ -431,8 +437,10 @@ public class Des {
 
 
     /**
+     * Decrypt a message following the DES algorithm
+     *
      * @param message_code Message to decrypt
-     * @return String
+     * @return String The decrypted message
      */
     public String decrypte(int[] message_code) {
         // Split message into blocks of 64 bits
@@ -463,19 +471,6 @@ public class Des {
         }
 
         return bitsToString(recollage_bloc(message_code_blocs));
-    }
-
-
-    public static void main(String[] args) {
-        Des des = new Des();
-
-        String s1 = "Hello World chingchong bingchiling !";
-        System.out.println("Message clair : " + s1);
-        int[] msg_crypto = des.crypte(s1);
-
-        System.out.println("Message crypté : " + Arrays.toString(msg_crypto));
-
-        System.out.println("Message décrypté : " + des.decrypte(msg_crypto));
     }
 
 }
