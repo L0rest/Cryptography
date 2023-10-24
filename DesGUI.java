@@ -181,6 +181,6 @@ public class DesGUI extends JFrame implements WindowListener {
     }
 
     public static void main(String[] args) {
-        DesGUI desGUI = new DesGUI();
+        new DesGUI();
     }
 }
