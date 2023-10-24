@@ -339,8 +339,10 @@ public class Des {
      * @param tab Binary value to get the corresponding value in the S table
      * @param noRonde Round number
      * @return int[] Value in the S table converted to binary
+     * @throws IllegalArgumentException if the bloc is not 6 bits long
      */
     public int[] fonction_S(int[] tab, int noRonde) {
+        if (tab.length != 6) throw new IllegalArgumentException("The bloc must be 6 bits long");
         // Get the row and column of the S table
         String row = tab[0] + "" + tab[5];
         String col = tab[1] + "" + tab[2] + tab[3] + tab[4];
@@ -372,14 +374,17 @@ public class Des {
 
 
     /**
-     * Make the F function on a bloc D using a key and a round number
+     * Make the F function on a bloc D using a key and a round number : the bloc D is first expanded using the E table, then XORed with the key, then split into 6-bits length blocs, and finally each bloc is converted to a 4-bits bloc using the S table, the results is then merged into a single bloc and permuted using the P table
      *
      * @param uneCle  Key to use
      * @param unD     D to use
      * @param noRonde Round number
      * @return int[] Result of the F function
+     * @throws IllegalArgumentException if the bloc D is not 32 bits long
      */
     int[] fonction_F(int[] uneCle, int[] unD, int noRonde) {
+        if (unD.length != 32) throw new IllegalArgumentException("The bloc D must be 32 bits long");
+
         int[] unDprime = permutation(E, unD);
 
         int[] res_xor = xor(unDprime, uneCle);

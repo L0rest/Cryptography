@@ -12,125 +12,85 @@ import java.io.FileWriter;
 
 public class DesGUI extends JFrame implements WindowListener {
 
-    JLabel label;
-    JPanel panel1;
-    JTextField textField;
-    JButton bDecryption, bEncryption, bRead;
-    Des des;
+    public JPanel panel;
+    public JButton chiffrement, dechiffrement, lecture;
+    public Des des;
 
     public DesGUI() {
         super("DES");
         this.setSize(500, 500);
         this.setVisible(true);
+        this.addWindowListener(this);
         this.setLayout(new BorderLayout());
 
-        this.label = new JLabel();
-        this.textField = new JTextField();
-        this.bDecryption = new JButton("Déchiffrer");
-        this.bEncryption = new JButton("Chiffrer");
-        this.bRead = new JButton("Lire");
-        this.panel1 = new JPanel(new GridLayout(1,3));
+        this.des = new Des();
 
-        this.add(panel1, BorderLayout.SOUTH);
-        this.add(label, BorderLayout.NORTH);
+        panel = new JPanel();
+        panel.setLayout(new GridLayout(1, 3));
 
-        panel1.add(bEncryption);
-        panel1.add(bDecryption);
-        panel1.add(bRead);
+        this.chiffrement = new JButton("Chiffrement");
+        this.dechiffrement = new JButton("Déchiffrement");
+        this.lecture = new JButton("Lecture");
 
-        // Add listener to buttons
-        bEncryption.addActionListener(e -> {
-            // Select a text file
+        panel.add(chiffrement);
+        panel.add(dechiffrement);
+        panel.add(lecture);
+
+        this.add(panel, BorderLayout.SOUTH);
+
+        // Action listeners
+
+        chiffrement.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt", "text");
-            fileChooser.setFileFilter(filter);
-            int returnVal = fileChooser.showOpenDialog(this);
+            fileChooser.setDialogTitle("Choisir un fichier à chiffrer");
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
+            int result = fileChooser.showOpenDialog(this);
 
-            try {
-                // Encrypt the text and create a new file with the encrypted text
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-                    Scanner scanner = new Scanner(file);
-                    // read the text
-                    StringBuilder text = new StringBuilder();
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                String path = selectedFile.getAbsolutePath();
+                String[] pathSplit = path.split("\\.");
+                String newPath = pathSplit[0] + "_chiffre.txt";
 
-                    while (scanner.hasNextLine()) {
-                        text.append(scanner.nextLine()).append("\n");
-                    }
-
-                    // encrypt the text
-                    String encryptedText = Arrays.toString(this.des.crypte(text.toString()));
-                    // create a new file
-                    File encryptedFile = new File(file.getParent() + "/encrypted.txt");
-
-                    FileWriter fileWriter = new FileWriter(encryptedFile);
-
-                    fileWriter.write(encryptedText);
-                    fileWriter.close();
-
-                    label.setText("Le fichier a été chiffré avec succès");
-                }
-            } catch (IllegalArgumentException ex) {
-                // Create popup
-                JOptionPane.showMessageDialog(this, "Le fichier n'est pas un fichier texte", "Erreur", JOptionPane.ERROR_MESSAGE);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-
-        bDecryption.addActionListener(e -> {
-            // Select a text file
-            JFileChooser fileChooser = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt", "text");
-            fileChooser.setFileFilter(filter);
-            int returnVal = fileChooser.showOpenDialog(this);
-
-            // Check if the file is a text file
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fileChooser.getSelectedFile();
+                // Read the file
                 Scanner scanner = null;
+
                 try {
-                    scanner = new Scanner(file);
-                } catch (FileNotFoundException ex) {
-                    throw new RuntimeException(ex);
+                    scanner = new Scanner(selectedFile);
+                } catch (FileNotFoundException fileNotFoundException) {
+                    throw new RuntimeException(fileNotFoundException);
                 }
 
-                // read the text
-                StringBuilder text = new StringBuilder();
+                // Check if the file is empty
+                if (!scanner.hasNextLine()) {
+                    JOptionPane.showMessageDialog(this, "Le fichier est vide !", "Erreur", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                StringBuilder text = new StringBuilder(scanner.nextLine());
 
                 while (scanner.hasNextLine()) {
-                    text.append(scanner.nextLine());
+                    text.append("\n").append(scanner.nextLine());
                 }
 
-                // Convert the string to an array of int
-                int[] textInt = Arrays.stream(text.toString().split(",")).mapToInt(Integer::parseInt).toArray();
+                // Crypt the text
+                String crypt = Arrays.toString(des.crypte(text.toString()));
 
-                // Decrypt the text
-                String decryptedText = this.des.decrypte(textInt);
-
-                // create a new file
-                File decryptedFile = new File(file.getParent() + "/decrypted.txt");
-
-                FileWriter fileWriter = null;
-
+                // Write to file
                 try {
-                    fileWriter = new FileWriter(decryptedFile);
-                    fileWriter.write(decryptedText);
+                    FileWriter fileWriter = new FileWriter(newPath);
+                    fileWriter.write(crypt);
                     fileWriter.close();
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
 
-                label.setText("Le fichier a été déchiffré avec succès");
+                // Create popup
+                JOptionPane.showMessageDialog(this, "Le fichier a été chiffré avec succès !", "Succès", JOptionPane.INFORMATION_MESSAGE);
             }
-
         });
 
-        bRead.addActionListener(e -> {
-
-        });
-
-        this.des = new Des();
 
     }
 
@@ -171,7 +131,5 @@ public class DesGUI extends JFrame implements WindowListener {
 
     public static void main(String[] args) {
         DesGUI desGUI = new DesGUI();
-        desGUI.setVisible(true);
-        desGUI.addWindowListener(desGUI);
     }
 }
