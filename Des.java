@@ -336,7 +336,7 @@ public class Des {
     /**
      * Obtain the value in the S[noRonde] table corresponding to the binary value in tab
      *
-     * @param tab Binary value to get the corresponding value in the S table
+     * @param tab     Binary value to get the corresponding value in the S table
      * @param noRonde Round number
      * @return int[] Value in the S table converted to binary
      * @throws IllegalArgumentException if the bloc is not 6 bits long
@@ -414,28 +414,23 @@ public class Des {
         // Split message into blocks of 64 bits
         int[][] message_code_blocs = decoupage(message_code, TAILLE_BLOC);
 
-        // Triple DES
-        for (int t = 0; t < 3; t++) {
+        // For each block, make an initial permutation and split it into two halves
+        for (int i = 0; i < message_code_blocs.length; i++) {
+            int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
 
-            // For each block, make an initial permutation and split it into two halves
-            for (int i = 0; i < message_code_blocs.length; i++) {
-                int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
+            int[][] sous_blocs = decoupage(bloc, TAILLE_SOUS_BLOC);
+            int[] G = sous_blocs[0];
+            int[] D = sous_blocs[1];
 
-                int[][] sous_blocs = decoupage(bloc, TAILLE_SOUS_BLOC);
-                int[] G = sous_blocs[0];
-                int[] D = sous_blocs[1];
-
-                for (int j = 0; j < NB_RONDE; j++) {
-                    int[] tmp = xor(G, fonction_F(tab_cles[j], D, j));
-                    G = D;
-                    D = tmp;
-                }
-
-                bloc = recollage_bloc(new int[][]{G, D});
-
-                message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
+            for (int j = 0; j < NB_RONDE; j++) {
+                int[] tmp = xor(G, fonction_F(tab_cles[j], D, j));
+                G = D;
+                D = tmp;
             }
 
+            bloc = recollage_bloc(new int[][]{G, D});
+
+            message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
         }
 
         return recollage_bloc(message_code_blocs);
@@ -453,28 +448,23 @@ public class Des {
         // Split message into blocks of 64 bits
         int[][] message_code_blocs = decoupage(message_code, TAILLE_BLOC);
 
-        // Triple DES
-        for (int t = 0; t < 3; t++) {
+        // For each block, make an initial permutation and split it into two halves
+        for (int i = 0; i < message_code_blocs.length; i++) {
+            int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
 
-            // For each block, make an initial permutation and split it into two halves
-            for (int i = 0; i < message_code_blocs.length; i++) {
-                int[] bloc = permutation(PERM_INITIALE, message_code_blocs[i]);
+            int[][] sous_blocs = decoupage(bloc, TAILLE_SOUS_BLOC);
+            int[] G = sous_blocs[0];
+            int[] D = sous_blocs[1];
 
-                int[][] sous_blocs = decoupage(bloc, TAILLE_SOUS_BLOC);
-                int[] G = sous_blocs[0];
-                int[] D = sous_blocs[1];
-
-                for (int j = NB_RONDE - 1; j >= 0; j--) {
-                    int[] tmp = D;
-                    D = G;
-                    G = xor(tmp, fonction_F(tab_cles[j], D, j));
-                }
-
-                bloc = recollage_bloc(new int[][]{G, D});
-
-                message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
+            for (int j = NB_RONDE - 1; j == 0; j--) {
+                int[] tmp = D;
+                D = G;
+                G = xor(tmp, fonction_F(tab_cles[j], D, j));
             }
 
+            bloc = recollage_bloc(new int[][]{G, D});
+
+            message_code_blocs[i] = invPermutation(PERM_INITIALE, bloc);
         }
 
         return bitsToString(recollage_bloc(message_code_blocs));

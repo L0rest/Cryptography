@@ -12,26 +12,23 @@ import java.io.FileWriter;
 
 public class DesGUI extends JFrame implements WindowListener {
 
-    public JPanel panel;
-    public JButton chiffrement, dechiffrement, lecture;
-    public Des des;
+    public JButton chiffrement, dechiffrement;
+    public TripleDes tDes;
 
     public DesGUI() {
         super("DES");
-        this.setSize(500, 200);
+        this.setSize(300, 100);
         this.setVisible(true);
         this.addWindowListener(this);
         this.setLayout(new GridLayout(1, 3));
 
-        this.des = new Des();
+        this.tDes = new TripleDes();
 
         this.chiffrement = new JButton("Chiffrement");
         this.dechiffrement = new JButton("Déchiffrement");
-        this.lecture = new JButton("Lecture");
 
         this.add(chiffrement);
         this.add(dechiffrement);
-        this.add(lecture);
 
 
         // Action listeners
@@ -71,7 +68,7 @@ public class DesGUI extends JFrame implements WindowListener {
                 }
 
                 // Crypt the text
-                String crypt = Arrays.toString(des.crypte(text.toString()));
+                String crypt = Arrays.toString(tDes.tripleCrypte(text.toString()));
 
                 // Write to file
                 try {
@@ -127,7 +124,7 @@ public class DesGUI extends JFrame implements WindowListener {
                 int[] array = Arrays.stream(text.substring(1, text.length() - 1).split(", ")).mapToInt(Integer::parseInt).toArray();
 
                 // Decrypt the text
-                String decrypt = des.decrypte(array);
+                String decrypt = tDes.tripleDecrypte(array);
 
                 // Write to file
                 try {
