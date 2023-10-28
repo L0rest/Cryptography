@@ -14,21 +14,29 @@ public class DesGUI extends JFrame implements WindowListener {
 
     public JButton chiffrement, dechiffrement;
     public TripleDes tDes;
+    public JPanel p;
+    public JLabel l;
 
     public DesGUI() {
         super("DES");
-        this.setSize(300, 100);
-        this.setVisible(true);
+        this.setSize(300, 200);
         this.addWindowListener(this);
-        this.setLayout(new GridLayout(1, 3));
+        this.setLayout(new GridLayout(2, 1));
 
         this.tDes = new TripleDes();
 
-        this.chiffrement = new JButton("Chiffrement");
-        this.dechiffrement = new JButton("Déchiffrement");
+        this.p = new JPanel(new GridLayout(1, 2));
+        this.l = new JLabel("Please choose an option");
+        this.chiffrement = new JButton("Encryption");
+        this.dechiffrement = new JButton("Decryption");
 
-        this.add(chiffrement);
-        this.add(dechiffrement);
+        this.add(this.l);
+        this.l.setHorizontalAlignment(JLabel.CENTER);
+        this.add(this.p);
+        this.p.add(chiffrement);
+        this.p.add(dechiffrement);
+
+        this.setVisible(true);
 
 
         // Action listeners
