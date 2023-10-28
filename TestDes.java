@@ -36,7 +36,7 @@ public class TestDes {
         int[] bloc1 = {1, 2, 3, 4, 5, 6, 7, 8};
         int[] permutation1 = {2, 4, 6, 0, 1, 3, 5, 7};
         int[] result1 = des.permutation(permutation1, bloc1);
-        int[] expected1 = new int[]{3, 5, 7, 1, 2, 4, 6, 8};
+        int[] expected1 = {3, 5, 7, 1, 2, 4, 6, 8};
         Assert.assertEquals(Arrays.toString(expected1), Arrays.toString(result1));
 
     }
@@ -48,18 +48,46 @@ public class TestDes {
 
         int[] bloc1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
         int[][] result1 = des.decoupage(bloc1, 4);
-        int[][] expected1 = new int[][]{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}};
+        int[][] expected1 = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}};
         Assert.assertEquals(Arrays.deepToString(expected1), Arrays.deepToString(result1));
 
-        int[] bloc4 = new int[10]; // storing random integers in the array
-        for (int i = 0; i < bloc4.length; i++) {
-            bloc4[i] = rd.nextInt(20);
+        int[] bloc2 = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[][] result2 = des.decoupage(bloc2, 1);
+        int[][] expected2 = {{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}};
+        Assert.assertEquals(Arrays.deepToString(expected2), Arrays.deepToString(result2));
+
+        int[] bloc3 = new int[10]; // storing random integers in the array
+        for (int i = 0; i < bloc3.length; i++) {
+            bloc3[i] = rd.nextInt(20);
         }
-        // A bloc is equals to the merge of its slices
-        Assert.assertEquals(Arrays.toString(bloc4), Arrays.toString(des.recollage_bloc(des.decoupage(bloc4, 5))));
+        int[] result3 = des.recollage_bloc(des.decoupage(bloc3, 5));
+        // Merge the subarrays into one array is the same as the original array
+        Assert.assertEquals(Arrays.toString(bloc3), Arrays.toString(result3));
+
+        int[] bloc4 = {};
+        des.decoupage(bloc4, 4); // throws IllegalArgumentException if the array is empty
 
         int[] bloc5 = {1, 2, 3, 4, 5, 6};
         des.decoupage(bloc5, 4); // throws IllegalArgumentException if the array can't be splited into 'tailleBlocs' length subarrays
+
+        int[][] bloc6 = {{1, 2, 3, 4}, {5, 6, 7, 8}};
+        int[] result6 = des.recollage_bloc(bloc6);
+        int[] expected6 = {1, 2, 3, 4, 5, 6, 7, 8};
+        Assert.assertEquals(Arrays.toString(expected6), Arrays.toString(result6));
+
+        int[][] bloc7 = {{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}};
+        int[] result7 = des.recollage_bloc(bloc7);
+        int[] expected7 = {1, 2, 3, 4, 5, 6, 7, 8};
+        Assert.assertEquals(Arrays.toString(expected7), Arrays.toString(result7));
+
+        int[][] bloc8 = {{}, {}, {}};
+        int[] result8 = des.recollage_bloc(bloc8);
+        int[] expected8 = {};
+        Assert.assertEquals(Arrays.toString(expected8), Arrays.toString(result8));
+
+        int[][] bloc9 = {};
+        des.recollage_bloc(bloc9); // throws IllegalArgumentException if the array is empty
+
     }
 
     @Test
@@ -69,7 +97,7 @@ public class TestDes {
 
         int[] bloc1 = {1, 2, 3, 4, 5, 6, 7, 8};
         int[] result1 = des.decale_gauche(bloc1, 1);
-        int[] expected1 = new int[]{2, 3, 4, 5, 6, 7, 8, 1};
+        int[] expected1 = {2, 3, 4, 5, 6, 7, 8, 1};
         Assert.assertEquals(Arrays.toString(expected1), Arrays.toString(result1));
 
         int[] bloc2 = new int[10]; // storing random integers in the array
@@ -88,19 +116,19 @@ public class TestDes {
         int[] bloc1 = {0, 0, 0, 0, 0, 0, 0, 0};
         int[] bloc2 = {1, 1, 1, 1, 1, 1, 1, 1};
         int[] result1 = des.xor(bloc1, bloc2);
-        int[] expected1 = new int[]{1, 1, 1, 1, 1, 1, 1, 1};
+        int[] expected1 = {1, 1, 1, 1, 1, 1, 1, 1};
         Assert.assertEquals(Arrays.toString(expected1), Arrays.toString(result1));
 
         int[] bloc3 = {1, 1, 1, 1, 1, 1, 1, 1};
         int[] bloc4 = {1, 1, 1, 1, 1, 1, 1, 1};
         int[] result2 = des.xor(bloc3, bloc4);
-        int[] expected2 = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
+        int[] expected2 = {0, 0, 0, 0, 0, 0, 0, 0};
         Assert.assertEquals(Arrays.toString(expected2), Arrays.toString(result2));
 
         int[] bloc5 = {1, 0, 1, 1, 0, 1, 1, 0};
         int[] bloc6 = {1, 1, 0, 1, 1, 1, 0, 1};
         int[] result3 = des.xor(bloc5, bloc6);
-        int[] expected3 = new int[]{0, 1, 1, 0, 1, 0, 1, 1};
+        int[] expected3 = {0, 1, 1, 0, 1, 0, 1, 1};
         Assert.assertEquals(Arrays.toString(expected3), Arrays.toString(result3));
 
         int[] bloc7 = {1, 0, 1, 1, 0, 1, 1, 0};

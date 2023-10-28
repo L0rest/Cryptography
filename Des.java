@@ -237,7 +237,8 @@ public class Des {
      */
     public int[][] decoupage(int[] bloc, int tailleBlocs) {
         if (bloc.length % tailleBlocs != 0)
-            throw new IllegalArgumentException("Le tableau de blocs doit être divisible par la taille des blocs");
+            throw new IllegalArgumentException("The bloc length must be a multiple of tailleBlocs");
+        if (bloc.length == 0) throw new IllegalArgumentException("The bloc must not be empty");
 
         int nbBlocs = bloc.length / tailleBlocs;
         int[][] blocs = new int[nbBlocs][tailleBlocs];
@@ -258,7 +259,7 @@ public class Des {
      * @throws IllegalArgumentException if the blocs array is empty
      */
     public int[] recollage_bloc(int[][] blocs) {
-        if (blocs.length == 0) throw new IllegalArgumentException("Le tableau de blocs ne doit pas être vide");
+        if (blocs.length == 0) throw new IllegalArgumentException("The blocs array must not be empty");
 
         int[] bloc = new int[blocs.length * blocs[0].length];
 
@@ -297,7 +298,7 @@ public class Des {
      */
     public int[] xor(int[] tab1, int[] tab2) {
         if (tab1.length != tab2.length)
-            throw new IllegalArgumentException("Les deux tableaux doivent avoir la même taille");
+            throw new IllegalArgumentException("The two arrays must have the same length");
 
         int[] tab_xor = new int[tab1.length];
 
