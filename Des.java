@@ -1,5 +1,4 @@
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Random;
 
 public class Des {
@@ -177,6 +176,7 @@ public class Des {
      *
      * @param block Block to convert to string
      * @return String obtained from the block
+     * @throws IllegalArgumentException if the block is empty
      */
     public String bitsToString(int[] block) {
         if (block.length == 0) throw new IllegalArgumentException("The block must not be empty");
@@ -233,7 +233,7 @@ public class Des {
      * @param bloc        Bloc to split
      * @param tailleBlocs Size of the blocs obtained after the split
      * @return int[][] Array of blocs obtained after the split
-     * @throws IllegalArgumentException if the bloc length is not a multiple of tailleBlocs
+     * @throws IllegalArgumentException if the bloc length is not a multiple of tailleBlocs or if the bloc is empty
      */
     public int[][] decoupage(int[] bloc, int tailleBlocs) {
         if (bloc.length % tailleBlocs != 0)

@@ -39,10 +39,40 @@ public class TestDes {
         int[] expected1 = {3, 5, 7, 1, 2, 4, 6, 8};
         Assert.assertEquals(Arrays.toString(expected1), Arrays.toString(result1));
 
+        int[] bloc2 = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[] permutation2 = {0, 1, 2, 3, 4, 5, 6, 7};
+        int[] result2 = des.permutation(permutation2, bloc2);
+        // if the permutation is the identity, the array doesn't change
+        Assert.assertEquals(Arrays.toString(bloc2), Arrays.toString(result2));
+
+        int[] bloc3 = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[] permutation3 = {7, 6, 5, 4, 3, 2, 1, 0};
+        int[] result3 = des.permutation(permutation3, bloc3);
+        int[] expected3 = {8, 7, 6, 5, 4, 3, 2, 1};
+        Assert.assertEquals(Arrays.toString(expected3), Arrays.toString(result3));
+
+        int[] bloc4 = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[] permutation4 = {5, 1, 3, 2, 4, 0, 7, 6};
+        int[] result4 = des.permutation(permutation4, bloc4);
+        int[] expected4 = {6, 2, 4, 3, 5, 1, 8, 7};
+        Assert.assertEquals(Arrays.toString(expected4), Arrays.toString(result4));
+
+        int[] bloc5 = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[] permutation5 = {5, 2, 4, 1};
+        int[] result5 = des.permutation(permutation5, bloc5);
+        int[] expected5 = {6, 3, 5, 2};
+        Assert.assertEquals(Arrays.toString(expected5), Arrays.toString(result5));
+
+        int[] bloc6 = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[] permutation6 = {5, 5, 5, 5, 5, 5, 5};
+        int[] result6 = des.permutation(permutation6, bloc6);
+        int[] expected6 = {6, 6, 6, 6, 6, 6, 6};
+        Assert.assertEquals(Arrays.toString(expected6), Arrays.toString(result6));
+
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void TestCoupageDecoupage() {
+    public void TestDecoupageRecollage() {
         Des des = new Des();
         Random rd = new Random();
 
@@ -107,6 +137,16 @@ public class TestDes {
         int[] result2 = des.decale_gauche(bloc2, bloc2.length);
         // if nbCran = length of the array, the array doesn't change
         Assert.assertEquals(Arrays.toString(bloc2), Arrays.toString(result2));
+
+        int[] bloc3 = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[] result3 = des.decale_gauche(bloc3, 0);
+        // if nbCran = 0, the array doesn't change
+        Assert.assertEquals(Arrays.toString(bloc3), Arrays.toString(result3));
+
+        int[] bloc4 = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[] result4 = des.decale_gauche(bloc4, 3);
+        int[] expected4 = {4, 5, 6, 7, 8, 1, 2, 3};
+        Assert.assertEquals(Arrays.toString(expected4), Arrays.toString(result4));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -136,13 +176,65 @@ public class TestDes {
         des.xor(bloc7, bloc8); // throws IllegalArgumentException if the arrays don't have the same length
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void TestFonctionS() {
+        Des des = new Des();
+
+        int[] bloc1 = {0, 0, 0, 0, 0, 0};
+        int noRound1 = 1;
+        int[] result1 = des.fonction_S(bloc1, noRound1);
+        int[] expected1 = {1, 1, 1, 1};
+        Assert.assertEquals(Arrays.toString(expected1), Arrays.toString(result1));
+
+        int[] bloc2 = {1, 1, 1, 1, 1, 1};
+        int noRound2 = 6;
+        int[] result2 = des.fonction_S(bloc2, noRound2);
+        int[] expected2 = {1, 1, 0, 0};
+        Assert.assertEquals(Arrays.toString(expected2), Arrays.toString(result2));
+
+        int[] bloc3 = {1, 0, 1, 1, 0, 1};
+        int noRound3 = 5;
+        int[] result3 = des.fonction_S(bloc3, noRound3);
+        int[] expected3 = {1, 1, 1, 1};
+        Assert.assertEquals(Arrays.toString(expected3), Arrays.toString(result3));
+
+        int[] bloc4 = {0, 1, 1, 0, 1, 0};
+        int noRound4 = 3;
+        int[] result4 = des.fonction_S(bloc4, noRound4);
+        int[] expected4 = {1, 1, 0, 0};
+        Assert.assertEquals(Arrays.toString(expected4), Arrays.toString(result4));
+
+        int[] bloc5 = {1, 0, 1, 1, 0};
+        des.fonction_S(bloc5, 1); // throws IllegalArgumentException if the array length is not 6
 
     }
 
-    @Test
+    @Test (expected = IllegalArgumentException.class)
     public void TestCrypteDecrypte() {
+        Des des = new Des();
+
+        String s1 = "Hello World";
+        String result1 = des.decrypte(des.crypte(s1));
+        Assert.assertEquals(s1, result1);
+
+        String s2 = "E45!2gf?grF41,G";
+        String result2 = des.decrypte(des.crypte(s2));
+        Assert.assertEquals(s2, result2);
+
+        String s3 = "a@é_çèà";
+        String result3 = des.decrypte(des.crypte(s3));
+        Assert.assertEquals(s3, result3);
+
+        String s4 = "Bonjour, ceci est un texte avec des caractères spéciaux : \n éèàçù!@#$%^&*()_+-=,;:/?<>|\\{}[]";
+        String result4 = des.decrypte(des.crypte(s4));
+        Assert.assertEquals(s4, result4);
+
+        String s5 = "";
+        des.crypte(s5); // throws IllegalArgumentException if the string is empty
+
+        int[] s6 = {};
+        des.decrypte(s6); // throws IllegalArgumentException if the array is empty
+
 
     }
 }
