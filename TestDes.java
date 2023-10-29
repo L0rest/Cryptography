@@ -27,6 +27,12 @@ public class TestDes {
 
         int[] tab = new int[0];
         des.bitsToString(tab); // throws IllegalArgumentException if the array is empty
+
+        // create a string containing russians, chinese and arabic characters
+        String s5 = "Привет, это текст с русскими, китайскими и арабскими символами: 你好，这是一个包含俄语，中文和阿拉伯语字符的文本：مرحبا ، هذا هو نص يحتوي على أحرف روسية وصينية وعربية: ";
+        String result5 = des.bitsToString(des.stringToBits(s5));
+        Assert.assertEquals(s5, result5);
+
     }
 
     @Test
@@ -46,10 +52,10 @@ public class TestDes {
         Assert.assertEquals(Arrays.toString(bloc2), Arrays.toString(result2));
 
         int[] bloc3 = {1, 2, 3, 4, 5, 6, 7, 8};
-        int[] permutation3 = {7, 6, 5, 4, 3, 2, 1, 0};
-        int[] result3 = des.permutation(permutation3, bloc3);
-        int[] expected3 = {8, 7, 6, 5, 4, 3, 2, 1};
-        Assert.assertEquals(Arrays.toString(expected3), Arrays.toString(result3));
+        int[] permutation3 = {5, 7, 2, 1, 6, 3, 0, 4};
+        int[] result3 = des.invPermutation(permutation3, des.permutation(permutation3, bloc3));
+        // if we make a permutation and then the inverse permutation, the array doesn't change
+        Assert.assertEquals(Arrays.toString(bloc3), Arrays.toString(result3));
 
         int[] bloc4 = {1, 2, 3, 4, 5, 6, 7, 8};
         int[] permutation4 = {5, 1, 3, 2, 4, 0, 7, 6};
@@ -61,13 +67,21 @@ public class TestDes {
         int[] permutation5 = {5, 2, 4, 1};
         int[] result5 = des.permutation(permutation5, bloc5);
         int[] expected5 = {6, 3, 5, 2};
+        // if the permutation is shorter than the array, some values are not used in the permutation and thus not in the result
         Assert.assertEquals(Arrays.toString(expected5), Arrays.toString(result5));
 
         int[] bloc6 = {1, 2, 3, 4, 5, 6, 7, 8};
         int[] permutation6 = {5, 5, 5, 5, 5, 5, 5};
         int[] result6 = des.permutation(permutation6, bloc6);
         int[] expected6 = {6, 6, 6, 6, 6, 6, 6};
+        // it's possible to have the same index multiple times in the permutation and thus to have multiple times the same value in the result
         Assert.assertEquals(Arrays.toString(expected6), Arrays.toString(result6));
+
+        int[] bloc7 = {1, 2, 3, 4, 5, 6, 7, 8};
+        int[] permutation7 = {5, 2, 4, 1, 3, 0, 7, 6};
+        int[] result7 = des.invPermutation(permutation7, bloc7);
+        int[] expected7 = {6, 4, 2, 5, 3, 1, 8, 7};
+        Assert.assertEquals(Arrays.toString(expected7), Arrays.toString(result7));
 
     }
 
@@ -209,7 +223,7 @@ public class TestDes {
 
     }
 
-    @Test (expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void TestCrypteDecrypte() {
         Des des = new Des();
 
@@ -235,6 +249,8 @@ public class TestDes {
         int[] s6 = {};
         des.decrypte(s6); // throws IllegalArgumentException if the array is empty
 
-
+        String s7 = "Привет, это текст с русскими, китайскими и арабскими символами: 你好，这是一个包含俄语，中文和阿拉伯语字符的文本：مرحبا ، هذا هو نص يحتوي على أحرف روسية وصينية وعربية: ";
+        String result7 = des.decrypte(des.crypte(s7));
+        Assert.assertEquals(s7, result7);
     }
 }
