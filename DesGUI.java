@@ -126,8 +126,6 @@ public class DesGUI extends JFrame implements WindowListener {
                     text.append("\n").append(scanner.nextLine());
                 }
 
-                System.out.println(text.toString());
-
                 // Convert the string to an array of int
                 int[] array = Arrays.stream(text.substring(1, text.length() - 1).split(", ")).mapToInt(Integer::parseInt).toArray();
 

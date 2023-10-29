@@ -5,7 +5,7 @@ public class Des {
 
     final int TAILLE_BLOC = 64;
     final int TAILLE_SOUS_BLOC = 32;
-    final int NB_RONDE = 1;
+    final int NB_RONDE = 16;
 
     final int[] TAB_DECALAGE = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
@@ -424,7 +424,7 @@ public class Des {
             int[] D = sous_blocs[1];
 
             for (int j = 0; j < NB_RONDE; j++) {
-                int[] tmp = xor(G, fonction_F(tab_cles[j], D, j));
+                int[] tmp = xor(G, fonction_F(tab_cles[j], D, j % 8));
                 G = D;
                 D = tmp;
             }
@@ -457,10 +457,10 @@ public class Des {
             int[] G = sous_blocs[0];
             int[] D = sous_blocs[1];
 
-            for (int j = NB_RONDE - 1; j == 0; j--) {
+            for (int j = NB_RONDE - 1; j >= 0; j--) {
                 int[] tmp = D;
                 D = G;
-                G = xor(tmp, fonction_F(tab_cles[j], D, j));
+                G = xor(tmp, fonction_F(tab_cles[j], D, j % 8));
             }
 
             bloc = recollage_bloc(new int[][]{G, D});
